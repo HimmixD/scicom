@@ -1,6 +1,7 @@
 import numpy as np
 import timeit as ti
 import matplotlib.pyplot as plt
+import lu_decomp as lu
 
 
 def create_problem(n):
@@ -16,20 +17,20 @@ def tri_solve(L, b):
     x = np.empty((len(b), 1))
     for i in range(len(x)):
         x[i] = (b[i] - sum(x[j] * L[i, j] for j in range(i))) / L[i, i]
-    return b
+    return x
 
 
-def tri_solve2(L, b):
-    x = np.empty((len(b), 1))
-    for i in range(len(x)):
-        x[i] = b[i] / L[i, i]
-        for j in range(i + 1, len(x)):
-            b[j] = b[j] - (x[i] * L[j, i])
+def tri_solve_upper(R, z):
+    n = len(z)
+    x = np.empty((n, 1))
+    for i in range(n):
+        x[i] = (z[i] - sum(x[j] * R[i, j] for j in range(i + 1, len(x)))) / R[i, i]
     return x
 
 
 L = np.array([[3, 0, 0], [1, 5, 0], [2, 3, 1]])
 b = np.array([[3], [2], [1]])
+M = np.array([[3, 2, 5], [7, 5, 0], [2, 8, 9]])
 
 
 def measure_time(func, *args):
@@ -68,4 +69,23 @@ def plot_times():
     plt.show()
 
 
-plot_times()
+def lu_solve(A, b, pv):
+    M, z = lu.lu(A, pv)
+    n, n = M.shape
+    L = np.zeros((n, n))
+    R = np.zeros((n, n))
+    for i in range(n):
+        b[i] = b[z[i]]
+        for j in range(n):
+            if i > j:
+                L[i, j] = M[i, j]
+            elif i == j:
+                L[i, j] = 1
+                R[i, j] = M[i, j]
+            else:
+                R[i, j] = M[i, j]
+
+    z = tri_solve(L, b)
+
+
+print(tri_solve(L, b))
