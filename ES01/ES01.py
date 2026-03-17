@@ -23,8 +23,8 @@ def tri_solve(L, b):
 def tri_solve_upper(R, z):
     n = len(z)
     x = np.empty((n, 1))
-    for i in range(n):
-        x[i] = (z[i] - sum(x[j] * R[i, j] for j in range(i + 1, len(x)))) / R[i, i]
+    for i in reversed(range(n)):
+        x[i] = (z[i] - sum(x[j] * R[i, j] for j in range(i+1, n))) / R[i, i]
     return x
 
 
@@ -68,6 +68,9 @@ def plot_times():
     plt.legend()
     plt.show()
 
+A = np.array([[10**(-17), 1],[2, 1]])
+b = np.array([[1], [3]])
+
 
 def lu_solve(A, b, pv):
     M, z = lu.lu(A, pv)
@@ -84,8 +87,15 @@ def lu_solve(A, b, pv):
                 R[i, j] = M[i, j]
             else:
                 R[i, j] = M[i, j]
+    z_sol = tri_solve(L, b)
+    x = tri_solve_upper(R, z_sol)#
+    x[i] = x[z[i]]
+    return x
 
-    z = tri_solve(L, b)
+B = np.array([[1, 2, 3], 
+              [0, 1, 4], 
+              [0, 0, 1]])
+u = np.array([[6], [5], [1]])
 
-
-print(tri_solve(L, b))
+#print(tri_solve_upper(B, u))
+print(lu_solve(A, b, True))
