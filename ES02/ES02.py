@@ -47,7 +47,7 @@ V = np.array([[x ** (j - 1) for j in range(1, 7)] for x in a])
 print(np.linalg.solve(V, b))
 
 
-# %% solving the second system of equations (b)
+# %% solving the second system of equations (b_s)
 print(np.linalg.solve(V, b_s))
 
 # %% comparing the relative errors
@@ -57,3 +57,13 @@ x_s = np.linalg.solve(V, b_s)
 dx = np.linalg.norm(x_s - x) / np.linalg.norm(x)
 db = np.linalg.norm(b_s - b) / np.linalg.norm(b)
 print(f"Delta_x = {dx}", f"Delta_b = {db}")
+
+# %% lower bound for the condition number
+cond_lower_bound = dx / db
+print(f"Lower bound for the condition number: {cond_lower_bound}")
+
+# %% condition number of the system via np.linalg.cond
+cond_V = np.linalg.cond(V, p=None)
+print(f"Condition number of the system: {cond_V}")
+
+# %%
