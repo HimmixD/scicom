@@ -58,27 +58,29 @@ def test_QR_eigensolve(n, eps, kmax):
     #    print("Eigenvalues from numpy:", eigvals)
     #    print("Eigenvalues from QR algorithm:", eigvals_qr)
 
-    for A in Ak:
+    for k, A in enumerate(Ak):
         Am = np.min(abs(A))
         AM = np.max(abs(A))
-        plt.figure(figsize=(4, 3))
+        plt.subplot(len(Ak) // 4 + 1, 4, k + 1)
         plt.imshow(A, cmap="ocean_r", vmin=Am, vmax=AM)
         plt.colorbar()
-        plt.show()
+
+    plt.tight_layout()
+    plt.show()
 
 
 # %%
-test_QR_eigensolve(16, 0, 500)
+test_QR_eigensolve(16, 0.005, 50)
 
 
 # %%
-def dir_veciter(A, eps):
+def dir_veciter(A, eps, k=0):
     n, n = np.shape(A)
     #    eigenvalues = np.linalg.eig(A)
     #    lam_max = np.max(abs(eigenvalues))
 
     v_k = np.zeros((n, 1))
-    v_k[0, 0] = 1
+    v_k[k, 0] = 1
     V = v_k.copy()
 
     run = True
@@ -102,10 +104,10 @@ def dir_veciter(A, eps):
     return lam, V
 
 
-def inv_veciter(A, lest, eps):
+def inv_veciter(A, lest, eps, k=0):
     n, n = np.shape(A)
     v_k = np.zeros((n, 1))
-    v_k[0, 0] = 1
+    v_k[k, 0] = 1
     V = v_k.copy()
 
     run = True
@@ -134,24 +136,63 @@ A = np.array([[2, 0, 0.2], [0, -2, 1], [0.2, 1, -2]])
 
 B = np.array([[2, 0, 0.2], [0, 2.02, 1], [0.2, 1, -2]])
 
-A_eigenvalues = np.linalg.eig(A)[0]
-B_eigenvalues = np.linalg.eig(B)[0]
-real_A = max(A_eigenvalues, key=abs)
-real_B = max(B_eigenvalues, key=abs)
+
+def plot_eigeniter():
+    for k in range(3):
+        A_eigenvalues = np.linalg.eig(A)[0]
+        B_eigenvalues = np.linalg.eig(B)[0]
+        real_A = max(A_eigenvalues, key=abs)
+        real_B = max(B_eigenvalues, key=abs)
+
+        lam_A, V_A = dir_veciter(A, 1e-5, k)
+        lam_B, V_B = dir_veciter(B, 1e-5, k)
+        lam_A_inv, V_A_inv = inv_veciter(A, -4, 1e-5, k)
+        lam_B_inv, V_B_inv = inv_veciter(B, 4, 1e-5, k)
+
+        plt.subplot(2, 2, 1)
+        plt.plot(
+            range(len(lam_A)), lam_A - real_A, marker="x", label="Direct iteration"
+        )
+        plt.title("Matrix A")
+        plt.xlabel("Iteration")
+        plt.ylabel("Delta_lambda")
+
+        plt.subplot(2, 2, 2)
+        plt.plot(
+            range(len(lam_B)), lam_B - real_B, marker="x", label="Direct iteration"
+        )
+        plt.title("Matrix B")
+        plt.xlabel("Iteration")
+        plt.ylabel("Delta_lambda")
+
+        plt.subplot(2, 2, 3)
+        plt.plot(
+            range(len(lam_A_inv)),
+            lam_A_inv - real_A,
+            marker="x",
+            label="Inverse iteration",
+        )
+        plt.title("Matrix A (inverse iteration)")
+        plt.xlabel("Iteration")
+        plt.ylabel("Delta_lambda")
+
+        plt.subplot(2, 2, 4)
+        plt.plot(
+            range(len(lam_B_inv)),
+            lam_B_inv - real_B,
+            marker="x",
+            label="Inverse iteration",
+        )
+        plt.title("Matrix B (inverse iteration)")
+        plt.xlabel("Iteration")
+        plt.ylabel("Delta_lambda")
+
+        plt.suptitle(
+            f"Convergence of eigenvalue approximations for k={k}, where k is the direction of the initial vector"
+        )
+        plt.tight_layout()
+        plt.show()
 
 
-lam_A, V_A = dir_veciter(A, 1e-5)
-lam_B, V_B = dir_veciter(B, 1e-5)
-lam_A_inv, V_A_inv = inv_veciter(A, 4, 1e-5)
-lam_B_inv, V_B_inv = inv_veciter(B, 4, 1e-5)
-
-
-print(real_A)
-print(real_B)
-print(lam_A[-1])
-print(lam_B[-1])
-print(lam_A_inv[-1])
-print(lam_B_inv[-1])
-
-
+plot_eigeniter()
 # %%
